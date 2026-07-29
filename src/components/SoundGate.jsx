@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
 import gateImage from '../assets/images/gate-bg.jpg';
+import thirdEye from '../assets/images/third-eye.png';
 
 const GateOverlay = styled(motion.div)`
   position: fixed;
@@ -40,10 +41,10 @@ const GateOverlay = styled(motion.div)`
   }
 
   .gate-eye {
-    width: 7rem;
+    width: 12rem;
     height: auto;
-    color: var(--blue-bright);
-    filter: drop-shadow(0 0 1.2rem rgba(0, 118, 255, 0.55));
+    mix-blend-mode: screen;
+    filter: drop-shadow(0 0 2rem rgba(0, 118, 255, 0.65));
   }
 
   .gate-eyebrow {
@@ -124,15 +125,7 @@ export default function SoundGate() {
               if (e.key === 'Enter' || e.key === ' ') enter();
             }}
           >
-            <svg className="gate-eye" viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M2 20C18 2 46 2 62 20C46 38 18 38 2 20Z"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <circle cx="32" cy="20" r="7" fill="currentColor" />
-              <path d="M32 4V12M32 28V36" stroke="currentColor" strokeWidth="2" />
-            </svg>
+            <img className="gate-eye" src={thirdEye} alt="Third eye" />
             <div className="gate-eyebrow">Ō Namaḥ Śivāya</div>
             <h1 className="gate-title">Enter the field</h1>
             <p className="gate-sub">
