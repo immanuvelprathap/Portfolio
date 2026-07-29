@@ -96,11 +96,11 @@ export default function AmbientAudio() {
     ctxRef.current = ctx;
 
     const compressor = ctx.createDynamicsCompressor();
-    compressor.threshold.value = -12;
+    compressor.threshold.value = -10;
     compressor.knee.value = 20;
-    compressor.ratio.value = 6;
+    compressor.ratio.value = 4;
     compressor.attack.value = 0.005;
-    compressor.release.value = 0.15;
+    compressor.release.value = 0.18;
     compressor.connect(ctx.destination);
 
     const master = ctx.createGain();
@@ -108,87 +108,73 @@ export default function AmbientAudio() {
     master.connect(compressor);
     masterRef.current = master;
 
-    // Generated plate reverb for a temple-like space.
+    // Soft temple reverb wash.
     const convolver = ctx.createConvolver();
-    const reverbDur = 2.4;
+    const reverbDur = 1.8;
     const reverbSamples = Math.ceil(ctx.sampleRate * reverbDur);
     const reverbBuffer = ctx.createBuffer(2, reverbSamples, ctx.sampleRate);
     for (let ch = 0; ch < 2; ch += 1) {
       const data = reverbBuffer.getChannelData(ch);
       for (let i = 0; i < reverbSamples; i += 1) {
-        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / reverbSamples, 2.6);
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / reverbSamples, 2.8);
       }
     }
     convolver.buffer = reverbBuffer;
 
     const wetGain = ctx.createGain();
-    wetGain.gain.value = 0.32;
+    wetGain.gain.value = 0.2;
     convolver.connect(wetGain);
     wetGain.connect(compressor);
     master.connect(convolver);
 
-    // Consciousness drone: 432 Hz tanpura (Sa / Pa / Sa) with a 4.5 Hz theta binaural beat.
-    const droneGain = ctx.createGain();
-    droneGain.gain.value = 0.24;
-    droneGain.connect(master);
+    // OM drone: 432 Hz fundamental with a harmonic series.
+    const omGain = ctx.createGain();
+    omGain.gain.value = 0.34;
+    omGain.connect(master);
 
-    const droneFilter = ctx.createBiquadFilter();
-    droneFilter.type = 'lowpass';
-    droneFilter.frequency.value = 960;
-    droneFilter.Q.value = 0.5;
-    droneFilter.connect(droneGain);
+    const omFilter = ctx.createBiquadFilter();
+    omFilter.type = 'lowpass';
+    omFilter.frequency.value = 1800;
+    omFilter.Q.value = 0.4;
+    omFilter.connect(omGain);
 
-    const theta = 4.5;
-    const droneBases = [108, 162, 216];
-    droneBases.forEach((f) => {
-      const left = ctx.createOscillator();
-      left.type = 'triangle';
-      left.frequency.value = f - theta / 2;
+    const harmonics = [
+      [108, 0.2],
+      [216, 0.26],
+      [432, 0.32],
+      [648, 0.12],
+      [864, 0.09],
+      [1080, 0.05],
+    ];
 
-      const right = ctx.createOscillator();
-      right.type = 'triangle';
-      right.frequency.value = f + theta / 2;
-
-      const leftPan = ctx.createStereoPanner();
-      leftPan.pan.value = -1;
-      const rightPan = ctx.createStereoPanner();
-      rightPan.pan.value = 1;
-
-      left.connect(leftPan);
-      right.connect(rightPan);
-      leftPan.connect(droneFilter);
-      rightPan.connect(droneFilter);
-      left.start();
-      right.start();
-    });
-
-    // Solfeggio overtone for clarity / awakening (528 Hz, 963 Hz).
-    [528, 963].forEach((freq) => {
+    harmonics.forEach(([freq, amp]) => {
       const osc = ctx.createOscillator();
       osc.type = 'sine';
       osc.frequency.value = freq;
-      const gain = ctx.createGain();
-      gain.gain.value = freq === 528 ? 0.05 : 0.025;
-      osc.connect(gain);
-      gain.connect(master);
+
+      const hGain = ctx.createGain();
+      hGain.gain.value = amp;
+
+      osc.connect(hGain);
+      hGain.connect(omFilter);
       osc.start();
     });
 
-    // Slow breathing motion on the drone.
+    // Slow breathing motion on the OM.
     const lfo = ctx.createOscillator();
     lfo.type = 'sine';
-    lfo.frequency.value = 0.12;
+    lfo.frequency.value = 0.09;
     const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 0.08;
+    lfoGain.gain.value = 0.09;
     lfo.connect(lfoGain);
-    lfoGain.connect(droneGain.gain);
+    lfoGain.connect(omGain.gain);
     lfo.start();
 
     // One damru strike: two-headed drum "dam" then "ru".
     const playStrike = (when) => {
-      // Dam - bright head dropping from Sa 432 to lower Sa 216.
+      // Dam - high head.
       const damGain = ctx.createGain();
-      damGain.gain.setValueAtTime(0.8, when);
+      damGain.gain.setValueAtTime(0.55, when);
       damGain.gain.exponentialRampToValueAtTime(0.001, when + 0.13);
       damGain.connect(master);
 
@@ -200,9 +186,9 @@ export default function AmbientAudio() {
       damOsc.start(when);
       damOsc.stop(when + 0.13);
 
-      // Ru - low head dropping from 216 to 108.
+      // Ru - low head.
       const ruGain = ctx.createGain();
-      ruGain.gain.setValueAtTime(0.65, when + 0.07);
+      ruGain.gain.setValueAtTime(0.45, when + 0.07);
       ruGain.gain.exponentialRampToValueAtTime(0.001, when + 0.28);
       ruGain.connect(master);
 
@@ -231,7 +217,7 @@ export default function AmbientAudio() {
       noiseFilter.Q.value = 0.9;
 
       const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.18, when);
+      noiseGain.gain.setValueAtTime(0.16, when);
       noiseGain.gain.exponentialRampToValueAtTime(0.001, when + len);
 
       noise.connect(noiseFilter);
@@ -246,22 +232,22 @@ export default function AmbientAudio() {
       if (!ctxRef.current || ctxRef.current.state !== 'running') return;
       while (nextHitRef.current < ctxRef.current.currentTime + 0.5) {
         playStrike(nextHitRef.current);
-        nextHitRef.current += 1.75;
+        nextHitRef.current += 2.0;
       }
     };
 
     tick();
-    intervalRef.current = setInterval(tick, 220);
+    intervalRef.current = setInterval(tick, 250);
 
     const onStateChange = () => {
       if (ctx.state === 'running') {
-        fadeTo(mutedRef.current ? 0 : 1, 0.6);
+        fadeTo(mutedRef.current ? 0 : 1, 0.8);
         setStarted(true);
       }
     };
     ctx.onstatechange = onStateChange;
 
-    // Resume synchronously inside the user-gesture stack; also handle the promise.
+    // Resume synchronously inside the user-gesture stack.
     ctx.resume().then(() => {
       onStateChange();
     });
