@@ -65,8 +65,6 @@ export default function AmbientAudio() {
 
   const ctxRef = useRef(null);
   const masterRef = useRef(null);
-  const intervalRef = useRef(null);
-  const nextHitRef = useRef(0);
   const mutedRef = useRef(muted);
 
   useEffect(() => {
@@ -100,7 +98,7 @@ export default function AmbientAudio() {
     compressor.knee.value = 20;
     compressor.ratio.value = 4;
     compressor.attack.value = 0.005;
-    compressor.release.value = 0.18;
+    compressor.release.value = 0.2;
     compressor.connect(ctx.destination);
 
     const master = ctx.createGain();
@@ -108,9 +106,9 @@ export default function AmbientAudio() {
     master.connect(compressor);
     masterRef.current = master;
 
-    // Soft temple reverb wash.
+    // Soft hall reverb wash.
     const convolver = ctx.createConvolver();
-    const reverbDur = 1.8;
+    const reverbDur = 2.2;
     const reverbSamples = Math.ceil(ctx.sampleRate * reverbDur);
     const reverbBuffer = ctx.createBuffer(2, reverbSamples, ctx.sampleRate);
     for (let ch = 0; ch < 2; ch += 1) {
@@ -122,32 +120,59 @@ export default function AmbientAudio() {
     convolver.buffer = reverbBuffer;
 
     const wetGain = ctx.createGain();
-    wetGain.gain.value = 0.2;
+    wetGain.gain.value = 0.22;
     convolver.connect(wetGain);
     wetGain.connect(compressor);
     master.connect(convolver);
 
-    // OM drone: 432 Hz fundamental with a harmonic series.
-    const omGain = ctx.createGain();
-    omGain.gain.value = 0.34;
-    omGain.connect(master);
+    // Cinematic 432 Hz organ drone: a deep, slowly swelling pad under the damru.
+    const droneGain = ctx.createGain();
+    droneGain.gain.value = 0.34;
+    droneGain.connect(master);
 
-    const omFilter = ctx.createBiquadFilter();
-    omFilter.type = 'lowpass';
-    omFilter.frequency.value = 1800;
-    omFilter.Q.value = 0.4;
-    omFilter.connect(omGain);
+    const droneFilter = ctx.createBiquadFilter();
+    droneFilter.type = 'lowpass';
+    droneFilter.frequency.value = 780;
+    droneFilter.Q.value = 0.8;
+    droneFilter.connect(droneGain);
 
-    const harmonics = [
-      [108, 0.2],
-      [216, 0.26],
-      [432, 0.32],
-      [648, 0.12],
-      [864, 0.09],
-      [1080, 0.05],
+    // Interstellar-style organ stops.
+    const organStops = [
+      [216, 0.18],
+      [432, 0.24],
+      [864, 0.08],
     ];
 
-    harmonics.forEach(([freq, amp]) => {
+    organStops.forEach(([freq, amp]) => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.value = freq;
+
+      const stopGain = ctx.createGain();
+      stopGain.gain.value = amp;
+
+      osc.connect(stopGain);
+      stopGain.connect(droneFilter);
+      osc.start();
+    });
+
+    // Pure OM harmonic series layered underneath.
+    const omFilter = ctx.createBiquadFilter();
+    omFilter.type = 'lowpass';
+    omFilter.frequency.value = 1600;
+    omFilter.Q.value = 0.4;
+    omFilter.connect(droneGain);
+
+    const omHarmonics = [
+      [108, 0.16],
+      [216, 0.2],
+      [432, 0.26],
+      [648, 0.1],
+      [864, 0.04],
+      [1080, 0.025],
+    ];
+
+    omHarmonics.forEach(([freq, amp]) => {
       const osc = ctx.createOscillator();
       osc.type = 'sine';
       osc.frequency.value = freq;
@@ -160,94 +185,34 @@ export default function AmbientAudio() {
       osc.start();
     });
 
-    // Slow breathing motion on the OM.
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.value = 0.09;
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 0.09;
-    lfo.connect(lfoGain);
-    lfoGain.connect(omGain.gain);
-    lfo.start();
+    // Slow amplitude swell for a cinematic pad.
+    const swellLfo = ctx.createOscillator();
+    swellLfo.type = 'sine';
+    swellLfo.frequency.value = 0.04;
+    const swellGain = ctx.createGain();
+    swellGain.gain.value = 0.1;
+    swellLfo.connect(swellGain);
+    swellGain.connect(droneGain.gain);
+    swellLfo.start();
 
-    // One damru strike: two-headed drum "dam" then "ru".
-    const playStrike = (when) => {
-      // Dam - high head.
-      const damGain = ctx.createGain();
-      damGain.gain.setValueAtTime(0.55, when);
-      damGain.gain.exponentialRampToValueAtTime(0.001, when + 0.13);
-      damGain.connect(master);
-
-      const damOsc = ctx.createOscillator();
-      damOsc.type = 'triangle';
-      damOsc.frequency.setValueAtTime(432, when);
-      damOsc.frequency.exponentialRampToValueAtTime(216, when + 0.13);
-      damOsc.connect(damGain);
-      damOsc.start(when);
-      damOsc.stop(when + 0.13);
-
-      // Ru - low head.
-      const ruGain = ctx.createGain();
-      ruGain.gain.setValueAtTime(0.45, when + 0.07);
-      ruGain.gain.exponentialRampToValueAtTime(0.001, when + 0.28);
-      ruGain.connect(master);
-
-      const ruOsc = ctx.createOscillator();
-      ruOsc.type = 'sine';
-      ruOsc.frequency.setValueAtTime(216, when + 0.07);
-      ruOsc.frequency.exponentialRampToValueAtTime(108, when + 0.28);
-      ruOsc.connect(ruGain);
-      ruOsc.start(when + 0.07);
-      ruOsc.stop(when + 0.28);
-
-      // Drum skin snap.
-      const len = 0.05;
-      const buffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * len), ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < data.length; i += 1) {
-        data[i] = (Math.random() * 2 - 1) * 0.9;
-      }
-
-      const noise = ctx.createBufferSource();
-      noise.buffer = buffer;
-
-      const noiseFilter = ctx.createBiquadFilter();
-      noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.value = 2600;
-      noiseFilter.Q.value = 0.9;
-
-      const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.16, when);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, when + len);
-
-      noise.connect(noiseFilter);
-      noiseFilter.connect(noiseGain);
-      noiseGain.connect(master);
-      noise.start(when);
-    };
-
-    nextHitRef.current = ctx.currentTime + 0.05;
-
-    const tick = () => {
-      if (!ctxRef.current || ctxRef.current.state !== 'running') return;
-      while (nextHitRef.current < ctxRef.current.currentTime + 0.5) {
-        playStrike(nextHitRef.current);
-        nextHitRef.current += 2.0;
-      }
-    };
-
-    tick();
-    intervalRef.current = setInterval(tick, 250);
+    // Slow filter sweep for a pipe-organ vowel-like motion.
+    const sweepLfo = ctx.createOscillator();
+    sweepLfo.type = 'sine';
+    sweepLfo.frequency.value = 0.03;
+    const sweepGain = ctx.createGain();
+    sweepGain.gain.value = 380;
+    sweepLfo.connect(sweepGain);
+    sweepGain.connect(droneFilter.frequency);
+    sweepLfo.start();
 
     const onStateChange = () => {
       if (ctx.state === 'running') {
-        fadeTo(mutedRef.current ? 0 : 1, 0.8);
+        fadeTo(mutedRef.current ? 0 : 1, 1.0);
         setStarted(true);
       }
     };
     ctx.onstatechange = onStateChange;
 
-    // Resume synchronously inside the user-gesture stack.
     ctx.resume().then(() => {
       onStateChange();
     });
@@ -259,7 +224,6 @@ export default function AmbientAudio() {
 
     return () => {
       window.removeEventListener('damru:enter', wake);
-      if (intervalRef.current) clearInterval(intervalRef.current);
       ctxRef.current?.close();
     };
   }, [start]);
@@ -273,8 +237,8 @@ export default function AmbientAudio() {
     <AudioButton
       type="button"
       $playing={started && !muted}
-      aria-label={muted ? 'Unmute damru' : 'Mute damru'}
-      title={muted ? 'Unmute damru' : 'Mute damru'}
+      aria-label={muted ? 'Unmute drone' : 'Mute drone'}
+      title={muted ? 'Unmute drone' : 'Mute drone'}
       onClick={() => {
         start();
         setMuted((m) => !m);

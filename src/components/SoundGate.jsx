@@ -136,11 +136,11 @@ export default function SoundGate() {
             <div className="gate-eyebrow">Ō Namaḥ Śivāya</div>
             <h1 className="gate-title">Enter the neural temple</h1>
             <p className="gate-sub">
-              A continuous damru drone accompanies this space. Click below to
+              A continuous 432 Hz OM drone accompanies this space. Click below to
               enter with sound and continue to the home page.
             </p>
             <button type="button" className="gate-btn" onClick={enter}>
-              Enter with damru
+              Enter with sound
             </button>
           </div>
         </GateOverlay>
