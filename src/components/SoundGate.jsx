@@ -19,8 +19,12 @@ const GateOverlay = styled(motion.div)`
   .gate-bg {
     position: absolute;
     inset: 0;
-    background: url(${gateImage}) center center / cover no-repeat;
-    opacity: 0.55;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    background: var(--void);
+    opacity: 0.62;
   }
 
   .gate-vignette {
@@ -114,7 +118,7 @@ export default function SoundGate() {
           transition={{ duration: 0.6, ease: 'easeInOut' }}
           onClick={enter}
         >
-          <div className="gate-bg" />
+          <img className="gate-bg" src={gateImage} alt="" />
           <div className="gate-vignette" />
           <div
             className="gate-content"
