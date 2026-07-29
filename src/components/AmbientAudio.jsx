@@ -73,6 +73,14 @@ export default function AmbientAudio() {
     mutedRef.current = muted;
   }, [muted]);
 
+  const fadeTo = useCallback((target, duration = 0.3) => {
+    if (!masterRef.current || !ctxRef.current) return;
+    const now = ctxRef.current.currentTime;
+    masterRef.current.gain.cancelScheduledValues(now);
+    masterRef.current.gain.setValueAtTime(masterRef.current.gain.value, now);
+    masterRef.current.gain.linearRampToValueAtTime(target, now + duration);
+  }, []);
+
   const start = useCallback(async () => {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
@@ -82,11 +90,12 @@ export default function AmbientAudio() {
       if (ctxRef.current.state === 'suspended') {
         try {
           await ctxRef.current.resume();
+          fadeTo(mutedRef.current ? 0 : 1, 0.8);
+          setStarted(true);
         } catch {
-          return;
+          // Ignore.
         }
       }
-      setStarted(true);
       return;
     }
 
@@ -94,7 +103,7 @@ export default function AmbientAudio() {
     ctxRef.current = ctx;
 
     const master = ctx.createGain();
-    master.gain.value = mutedRef.current ? 0 : 1;
+    master.gain.value = 0;
     master.connect(ctx.destination);
     masterRef.current = master;
 
@@ -193,36 +202,28 @@ export default function AmbientAudio() {
 
     try {
       await ctx.resume();
+      fadeTo(mutedRef.current ? 0 : 1, 2.4);
+      setStarted(true);
     } catch {
-      // Autoplay blocked - audio will resume after the first user gesture.
+      // AudioContext could not start.
     }
-
-    setStarted(true);
-  }, []);
+  }, [fadeTo]);
 
   useEffect(() => {
-    start();
-
     const wake = () => start();
-    document.addEventListener('click', wake, { once: true });
-    document.addEventListener('touchstart', wake, { once: true });
-    document.addEventListener('keydown', wake, { once: true });
+    window.addEventListener('damru:enter', wake);
 
     return () => {
-      document.removeEventListener('click', wake);
-      document.removeEventListener('touchstart', wake);
-      document.removeEventListener('keydown', wake);
+      window.removeEventListener('damru:enter', wake);
       if (intervalRef.current) clearInterval(intervalRef.current);
       ctxRef.current?.close();
     };
   }, [start]);
 
   useEffect(() => {
-    if (masterRef.current) {
-      masterRef.current.gain.value = muted ? 0 : 1;
-    }
+    fadeTo(muted ? 0 : 1, 0.4);
     localStorage.setItem('ambient-muted', muted.toString());
-  }, [muted]);
+  }, [muted, fadeTo]);
 
   return (
     <AudioButton

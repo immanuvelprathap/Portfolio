@@ -7,6 +7,7 @@ import Adventures from './pages/Adventures';
 import Contact from './pages/Contact';
 import NavBar from './components/NavBar';
 import AmbientAudio from './components/AmbientAudio';
+import SoundGate from './components/SoundGate';
 import ScrollToTop from './components/ScrollToTop';
 import SmoothScroll from './components/SmoothScroll';
 import ConsciousnessField from './components/ConsciousnessField';
@@ -20,6 +21,7 @@ export default function App() {
       <ScrollToTop />
       <NavBar />
       <AmbientAudio />
+      <SoundGate />
       <PageShell>
         <Routes>
           <Route path="/" element={<Home />} />
