@@ -8,7 +8,7 @@ const profile = {
     'Data Engineering at Scale',
   ],
   location: 'Bern, Switzerland',
-  email: 'mailtoimmanuvel@gmail.com',
+  email: 'immanuvel.prathap.s@gmail.com',
   whoIAm: [
     'I am a researcher standing where Śiva\u2019s stillness meets the storm of cortical spikes. By day I decode electroencephalograms; by night I read what the Āgamas say about the same silence the electrodes are chasing.',
     'Trained as an engineer, shaped by seven years of building data systems, I now pursue a Research Master\u2019s in Artificial Intelligence in Medicine at the University of Bern \u2014 teaching machines to read intention straight from the brain, without asking the brain to calibrate itself first.',
@@ -36,7 +36,7 @@ const profile = {
     {
       name: 'Google Scholar',
       handle: 'Immanuvel Prathap S',
-      url: 'https://scholar.google.com/scholar?q=Immanuvel+Prathap+Sagayaraju',
+      url: 'https://scholar.google.com/citations?user=HSx9nIkAAAAJ&hl=en',
       icon: 'scholar',
     },
   ],

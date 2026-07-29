@@ -173,7 +173,7 @@ export default function WhoIAm() {
             </h2>
           </Reveal>
           <Reveal delay={0.14}>
-            <p className="who__sanskrit sanskrit">चिदाकाश · Cidākāśa</p>
+            <p className="who__sanskrit">Cidākāśa</p>
           </Reveal>
           <div className="who__body">
             {profile.whoIAm.map((para, index) => (
