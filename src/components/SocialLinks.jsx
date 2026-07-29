@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
-import { FaGithub, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
+import { FaGithub, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
 import { SiGooglescholar } from 'react-icons/si';
 import profile from '../data/profile';
 
@@ -9,6 +9,7 @@ const icons = {
   x: FaXTwitter,
   github: FaGithub,
   scholar: SiGooglescholar,
+  instagram: FaInstagram,
 };
 
 const SocialStyles = styled(motion.ul)`

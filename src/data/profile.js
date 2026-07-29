@@ -39,6 +39,12 @@ const profile = {
       url: 'https://scholar.google.com/citations?user=HSx9nIkAAAAJ&hl=en',
       icon: 'scholar',
     },
+    {
+      name: 'Instagram',
+      handle: '@pahtarp_levunammi',
+      url: 'https://www.instagram.com/pahtarp_levunammi/',
+      icon: 'instagram',
+    },
   ],
 };
 

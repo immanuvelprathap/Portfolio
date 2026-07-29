@@ -3,6 +3,7 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Projects from './pages/Projects';
 import Publications from './pages/Publications';
+import Adventures from './pages/Adventures';
 import Contact from './pages/Contact';
 import NavBar from './components/NavBar';
 import ScrollToTop from './components/ScrollToTop';
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/publications" element={<Publications />} />
+          <Route path="/adventures" element={<Adventures />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<Home />} />
         </Routes>

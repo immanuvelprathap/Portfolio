@@ -141,6 +141,7 @@ const links = [
   { to: '/about', label: 'About' },
   { to: '/projects', label: 'Projects' },
   { to: '/publications', label: 'Publications' },
+  { to: '/adventures', label: 'Adventures' },
   { to: '/contact', label: 'Contact' },
 ];
 

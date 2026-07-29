@@ -104,6 +104,9 @@ export default function Footer() {
                 <Link to="/publications">Publications</Link>
               </li>
               <li>
+                <Link to="/adventures">Adventures</Link>
+              </li>
+              <li>
                 <Link to="/contact">Contact</Link>
               </li>
             </ul>
