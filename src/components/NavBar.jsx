@@ -140,6 +140,7 @@ const links = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/projects', label: 'Projects' },
+  { to: '/publications', label: 'Publications' },
   { to: '/contact', label: 'Contact' },
 ];
 

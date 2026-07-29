@@ -36,7 +36,7 @@ const profile = {
     {
       name: 'Google Scholar',
       handle: 'Immanuvel Prathap S',
-      url: 'https://scholar.google.com/citations?user=&hl=en',
+      url: 'https://scholar.google.com/scholar?q=Immanuvel+Prathap+Sagayaraju',
       icon: 'scholar',
     },
   ],
