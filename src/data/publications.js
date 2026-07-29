@@ -1,4 +1,6 @@
-const publications = [
+import orcidWorks from './auto/orcid.js';
+
+const manualPublications = [
   {
     id: 'dfrag-patient',
     year: '2026',
@@ -46,6 +48,18 @@ const publications = [
       'Designed and evaluated a customised palm-and-arm spraying system to automate and optimise knapsack-based agricultural spraying, reducing operator fatigue and chemical exposure.',
     link: null,
   },
+];
+
+const seen = new Set(manualPublications.map((p) => p.title.toLowerCase().trim()));
+
+const publications = [
+  ...manualPublications,
+  ...orcidWorks.filter((p) => {
+    const key = p.title.toLowerCase().trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }),
 ];
 
 export const researchStreams = [

@@ -3,11 +3,12 @@ import { motion } from 'framer-motion';
 import { FaInstagram } from 'react-icons/fa6';
 import Footer from '../components/Footer';
 import Reveal from '../components/Reveal';
-import InstagramEmbed from '../components/InstagramEmbed';
+import InstagramCarousel from '../components/InstagramCarousel';
 import PeakImg from '../assets/images/adventure-peak.jpg';
 import MistImg from '../assets/images/adventure-mist.jpg';
 import LakeImg from '../assets/images/adventure-lake.jpg';
 import profile from '../data/profile';
+import instagramPosts from '../data/auto/instagram.js';
 
 const PageStyles = styled.div`
   padding: 18rem 0 0;
@@ -263,38 +264,6 @@ const items = [
   },
 ];
 
-const advPosts = [
-  {
-    shortcode: 'C_X23g-yMpq',
-    title: 'Mighty Kalu',
-    location: 'Monsoon trek, India',
-  },
-  {
-    shortcode: 'DXwx8Z6MYxZ',
-    title: 'Lake Luzern',
-    location: 'Switzerland',
-  },
-  {
-    shortcode: 'DTtMHNRjKZH',
-    title: 'Mdina overlook',
-    location: 'Malta',
-  },
-  {
-    shortcode: 'DTtKqwoDP1c',
-    title: 'Laguna Blu',
-    location: 'Malta',
-  },
-  {
-    shortcode: 'DTtKRaVjJp4',
-    title: 'Blue Lagoon',
-    location: 'Comino, Malta',
-  },
-  {
-    shortcode: 'DXBvxx6DJF6',
-    title: 'Bern',
-    location: 'Switzerland',
-  },
-];
 
 const cardVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -356,43 +325,10 @@ export default function Adventures() {
           </motion.div>
 
           <Reveal delay={0.1}>
-            <section className="adv__embeds">
-              <div className="adv__embed__head">
-                <p className="eyebrow">From the field</p>
-                <h2>
-                  Peaks, <em>lagoons</em> and monsoon trails
-                </h2>
-                <p>
-                  A few dispatches from the road — mountain treks, alpine lakes,
-                  and the blue lagoons that look like consciousness made liquid.
-                </p>
-              </div>
-
-              <motion.div
-                className="adv__embed__grid"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.1 }}
-                transition={{ staggerChildren: 0.12 }}
-              >
-                {advPosts.map((post) => (
-                  <motion.article
-                    className="adv__embed__cell"
-                    key={post.shortcode}
-                    variants={cardVariants}
-                  >
-                    <InstagramEmbed
-                      shortcode={post.shortcode}
-                      caption={`${post.title} — ${post.location}`}
-                    />
-                    <div className="adv__embed__caption">
-                      <h3>{post.title}</h3>
-                      <p>{post.location}</p>
-                    </div>
-                  </motion.article>
-                ))}
-              </motion.div>
-            </section>
+            <InstagramCarousel
+              posts={instagramPosts}
+              title={<>Peaks, <em>lagoons</em> and monsoon trails</>}
+            />
           </Reveal>
 
           {instagram ? (
