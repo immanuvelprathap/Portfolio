@@ -134,7 +134,7 @@ export default function SoundGate() {
               <path d="M32 4V12M32 28V36" stroke="currentColor" strokeWidth="2" />
             </svg>
             <div className="gate-eyebrow">Ō Namaḥ Śivāya</div>
-            <h1 className="gate-title">Enter the field</h1>
+            <h1 className="gate-title">Enter the neural temple</h1>
             <p className="gate-sub">
               A continuous damru drone accompanies this space. Click below to
               enter with sound and continue to the home page.

@@ -109,59 +109,84 @@ export default function AmbientAudio() {
     master.connect(compressor);
     masterRef.current = master;
 
-    // Tanpura-style drone: Sa, Pa, upper Sa.
+    // Consciousness drone: 432 Hz tanpura scale (Sa/Pa/Sa) with 4.5 Hz theta binaural beat.
     const droneGain = ctx.createGain();
     droneGain.gain.value = 0.16;
     droneGain.connect(master);
 
-    const droneFreqs = [110, 165, 220];
-    droneFreqs.forEach((f) => {
-      const osc = ctx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = f;
-      osc.connect(droneGain);
-      osc.start();
+    const theta = 4.5;
+    const droneBases = [108, 162, 216];
+    droneBases.forEach((f) => {
+      const left = ctx.createOscillator();
+      left.type = 'sine';
+      left.frequency.value = f - theta / 2;
+
+      const right = ctx.createOscillator();
+      right.type = 'sine';
+      right.frequency.value = f + theta / 2;
+
+      const leftPan = ctx.createStereoPanner();
+      leftPan.pan.value = -1;
+      const rightPan = ctx.createStereoPanner();
+      rightPan.pan.value = 1;
+
+      left.connect(leftPan);
+      right.connect(rightPan);
+      leftPan.connect(droneGain);
+      rightPan.connect(droneGain);
+      left.start();
+      right.start();
     });
+
+    // 528 Hz solfeggio overtone for clarity / DNA repair.
+    const solfeggio = ctx.createOscillator();
+    solfeggio.type = 'sine';
+    solfeggio.frequency.value = 528;
+    const solfGain = ctx.createGain();
+    solfGain.gain.value = 0.05;
+    solfeggio.connect(solfGain);
+    solfGain.connect(master);
+    solfeggio.start();
 
     // Slow breathing motion on the drone.
     const lfo = ctx.createOscillator();
     lfo.type = 'sine';
     lfo.frequency.value = 0.12;
     const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 0.04;
+    lfoGain.gain.value = 0.06;
     lfo.connect(lfoGain);
     lfoGain.connect(droneGain.gain);
     lfo.start();
 
-    // One damru strike: two-headed drum - "dam" then "ru".
+    // One damru strike: two-headed drum - "dam" then "ru", tuned to 432-based Sa.
     const playStrike = (when) => {
-      // Dam - higher tone dropping fast (easy to hear on phones).
+      // Dam - high head (Sa 432 dropping to lower Sa 216).
       const damGain = ctx.createGain();
-      damGain.gain.setValueAtTime(0.55, when);
-      damGain.gain.exponentialRampToValueAtTime(0.001, when + 0.12);
+      damGain.gain.setValueAtTime(0.65, when);
+      damGain.gain.exponentialRampToValueAtTime(0.001, when + 0.14);
       damGain.connect(master);
 
       const damOsc = ctx.createOscillator();
       damOsc.type = 'triangle';
-      damOsc.frequency.setValueAtTime(260, when);
-      damOsc.frequency.exponentialRampToValueAtTime(140, when + 0.12);
+      damOsc.frequency.setValueAtTime(432, when);
+      damOsc.frequency.exponentialRampToValueAtTime(216, when + 0.14);
       damOsc.connect(damGain);
       damOsc.start(when);
-      damOsc.stop(when + 0.12);
+      damOsc.stop(when + 0.14);
 
-      // Ru - lower tone dropping.
+      // Ru - low head (216 dropping to 108).
       const ruGain = ctx.createGain();
-      ruGain.gain.setValueAtTime(0.45, when + 0.1);
-      ruGain.gain.exponentialRampToValueAtTime(0.001, when + 0.28);
+      ruGain.gain.setValueAtTime(0.55, when + 0.08);
+      ruGain.gain.exponentialRampToValueAtTime(0.001, when + 0.3);
       ruGain.connect(master);
 
       const ruOsc = ctx.createOscillator();
       ruOsc.type = 'sine';
-      ruOsc.frequency.setValueAtTime(140, when + 0.1);
-      ruOsc.frequency.exponentialRampToValueAtTime(78, when + 0.28);
+      ruOsc.frequency.setValueAtTime(216, when + 0.08);
+      ruOsc.frequency.exponentialRampToValueAtTime(108, when + 0.3);
       ruOsc.connect(ruGain);
-      ruOsc.start(when + 0.1);
-      ruOsc.stop(when + 0.28);
+      ruOsc.start(when + 0.08);
+      ruOsc.stop(when + 0.3);
 
       // Brief noise snap for the drum skin.
       const len = 0.06;
@@ -176,7 +201,7 @@ export default function AmbientAudio() {
 
       const noiseFilter = ctx.createBiquadFilter();
       noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.value = 900;
+      noiseFilter.frequency.value = 2200;
       noiseFilter.Q.value = 0.8;
 
       const noiseGain = ctx.createGain();
