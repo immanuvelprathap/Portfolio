@@ -57,6 +57,10 @@ const AudioButton = styled.button`
   }
 `;
 
+const HiddenAudio = styled.audio`
+  display: none;
+`;
+
 export default function AmbientAudio() {
   const [muted, setMuted] = useState(
     () => localStorage.getItem('ambient-muted') === 'true'
@@ -67,12 +71,13 @@ export default function AmbientAudio() {
   const initialMuted = localStorage.getItem('ambient-muted') === 'true';
 
   useEffect(() => {
-    const audio = new Audio('/audio/drone.mp3');
+    const audio = audioRef.current;
+    if (!audio) return undefined;
+
     audio.loop = true;
     audio.preload = 'auto';
     audio.volume = 0.8;
     audio.muted = initialMuted;
-    audioRef.current = audio;
 
     const handlePlay = () => setStarted(true);
     const handlePause = () => setStarted(false);
@@ -83,7 +88,6 @@ export default function AmbientAudio() {
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
       audio.pause();
-      audioRef.current = null;
     };
   }, [initialMuted]);
 
@@ -96,9 +100,10 @@ export default function AmbientAudio() {
 
   useEffect(() => {
     const wake = () => {
-      if (!audioRef.current) return;
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
     };
     window.addEventListener('damru:enter', wake);
 
@@ -108,21 +113,25 @@ export default function AmbientAudio() {
   }, []);
 
   const toggleMuted = () => {
-    if (!audioRef.current) return;
+    const audio = audioRef.current;
+    if (!audio) return;
     setMuted((m) => !m);
-    audioRef.current.play().catch(() => {});
+    audio.play().catch(() => {});
   };
 
   return (
-    <AudioButton
-      type="button"
-      $playing={started && !muted}
-      aria-label={muted ? 'Unmute drone' : 'Mute drone'}
-      title={muted ? 'Unmute drone' : 'Mute drone'}
-      onClick={toggleMuted}
-    >
-      <span className="audio-ping" aria-hidden="true" />
-      {muted ? <MdVolumeOff /> : <MdVolumeUp />}
-    </AudioButton>
+    <>
+      <AudioButton
+        type="button"
+        $playing={started && !muted}
+        aria-label={muted ? 'Unmute drone' : 'Mute drone'}
+        title={muted ? 'Unmute drone' : 'Mute drone'}
+        onClick={toggleMuted}
+      >
+        <span className="audio-ping" aria-hidden="true" />
+        {muted ? <MdVolumeOff /> : <MdVolumeUp />}
+      </AudioButton>
+      <HiddenAudio ref={audioRef} src="/audio/drone.mp3" />
+    </>
   );
 }
