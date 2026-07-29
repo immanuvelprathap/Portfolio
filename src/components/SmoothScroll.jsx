@@ -8,10 +8,15 @@ export default function SmoothScroll() {
     }
 
     const lenis = new Lenis({
-      duration: 1.15,
-      easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),
+      lerp: 0.07,
+      wheelMultiplier: 0.85,
+      touchMultiplier: 1.4,
       smoothWheel: true,
-      touchMultiplier: 1.6,
+      syncTouch: true,
+      syncTouchLerp: 0.1,
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      infinite: false,
     });
 
     window.lenis = lenis;
