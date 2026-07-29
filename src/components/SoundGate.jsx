@@ -1,34 +1,49 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
+import gateImage from '../assets/images/gate-bg.jpg';
 
 const GateOverlay = styled(motion.div)`
   position: fixed;
   inset: 0;
   z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2.6rem;
+  display: grid;
+  place-items: center;
   background: var(--void);
   color: var(--white);
   text-align: center;
-  padding: 2.4rem;
+  overflow: hidden;
 
-  .gate-ring {
-    width: 12rem;
-    height: 12rem;
-    border-radius: 50%;
-    border: 1px solid var(--line);
-    display: grid;
-    place-items: center;
+  .gate-bg {
+    position: absolute;
+    inset: 0;
+    background: url(${gateImage}) center center / cover no-repeat;
+    opacity: 0.55;
+  }
 
-    svg {
-      width: 4.2rem;
-      height: 4.2rem;
-      color: var(--blue);
-    }
+  .gate-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.82) 75%);
+  }
+
+  .gate-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.4rem;
+    padding: 2.4rem;
+    max-width: 70rem;
+  }
+
+  .gate-eye {
+    width: 7rem;
+    height: auto;
+    color: var(--blue-bright);
+    filter: drop-shadow(0 0 1.2rem rgba(0, 118, 255, 0.55));
   }
 
   .gate-eyebrow {
@@ -37,33 +52,35 @@ const GateOverlay = styled(motion.div)`
     letter-spacing: 0.45em;
     text-transform: uppercase;
     color: var(--blue-bright);
+    text-shadow: 0 0 1.2rem rgba(0, 118, 255, 0.35);
   }
 
   .gate-title {
     font-family: var(--display);
-    font-size: clamp(2.8rem, 7vw, 5.2rem);
+    font-size: clamp(3.2rem, 8vw, 6rem);
     color: var(--blue);
     letter-spacing: 0.08em;
     line-height: 1.05;
+    text-shadow: 0 0 2rem rgba(0, 118, 255, 0.25);
   }
 
   .gate-sub {
-    max-width: 44ch;
-    font-size: 1.45rem;
+    max-width: 46ch;
+    font-size: 1.5rem;
     color: var(--mist);
     line-height: 1.7;
   }
 
   .gate-btn {
-    margin-top: 0.8rem;
-    padding: 1.4rem 3.2rem;
+    padding: 1.6rem 4rem;
     border: 1px solid var(--blue);
-    background: transparent;
+    background: rgba(0, 0, 0, 0.45);
     color: var(--blue-bright);
     font-family: var(--mono);
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     letter-spacing: 0.35em;
     text-transform: uppercase;
+    backdrop-filter: blur(10px);
     transition: background 0.35s ease, color 0.35s ease, transform 0.35s ease;
 
     &:hover {
@@ -72,26 +89,18 @@ const GateOverlay = styled(motion.div)`
       transform: translateY(-2px);
     }
   }
-
-  @media only screen and (max-width: 768px) {
-    .gate-ring {
-      width: 9rem;
-      height: 9rem;
-
-      svg {
-        width: 3.2rem;
-        height: 3.2rem;
-      }
-    }
-  }
 `;
 
 export default function SoundGate() {
   const [entered, setEntered] = useState(false);
+  const navigate = useNavigate();
 
   const enter = () => {
     window.dispatchEvent(new CustomEvent('damru:enter'));
     setEntered(true);
+    setTimeout(() => {
+      navigate('/', { replace: true });
+    }, 600);
   };
 
   return (
@@ -101,26 +110,39 @@ export default function SoundGate() {
           key="sound-gate"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: 'easeInOut' }}
+          transition={{ duration: 0.6, ease: 'easeInOut' }}
+          onClick={enter}
         >
-          <motion.div
-            className="gate-ring"
-            animate={{ scale: [1, 1.08, 1] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          <div className="gate-bg" />
+          <div className="gate-vignette" />
+          <div
+            className="gate-content"
+            onClick={(e) => e.stopPropagation()}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') enter();
+            }}
           >
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 3v9.28a4.39 4.39 0 0 0-1.5-.28C8.57 12 7 13.57 7 15.5S8.57 19 10.5 19c1.87 0 3.4-1.46 3.49-3.3L14 15.6V7h3V3h-5z" />
+            <svg className="gate-eye" viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M2 20C18 2 46 2 62 20C46 38 18 38 2 20Z"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <circle cx="32" cy="20" r="7" fill="currentColor" />
+              <path d="M32 4V12M32 28V36" stroke="currentColor" strokeWidth="2" />
             </svg>
-          </motion.div>
-          <div className="gate-eyebrow">Ō Namaḥ Śivāya</div>
-          <h1 className="gate-title">Enter the field</h1>
-          <p className="gate-sub">
-            A continuous damru drone accompanies this space. Click below to enter
-            with sound.
-          </p>
-          <button type="button" className="gate-btn" onClick={enter}>
-            Enter with damru
-          </button>
+            <div className="gate-eyebrow">Ō Namaḥ Śivāya</div>
+            <h1 className="gate-title">Enter the field</h1>
+            <p className="gate-sub">
+              A continuous damru drone accompanies this space. Click below to
+              enter with sound and continue to the home page.
+            </p>
+            <button type="button" className="gate-btn" onClick={enter}>
+              Enter with damru
+            </button>
+          </div>
         </GateOverlay>
       )}
     </AnimatePresence>

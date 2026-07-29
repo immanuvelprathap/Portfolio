@@ -81,20 +81,14 @@ export default function AmbientAudio() {
     masterRef.current.gain.linearRampToValueAtTime(target, now + duration);
   }, []);
 
-  const start = useCallback(async () => {
+  const start = useCallback(() => {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
 
     // Resume existing context if available.
     if (ctxRef.current) {
       if (ctxRef.current.state === 'suspended') {
-        try {
-          await ctxRef.current.resume();
-          fadeTo(mutedRef.current ? 0 : 1, 0.8);
-          setStarted(true);
-        } catch {
-          // Ignore.
-        }
+        ctxRef.current.resume();
       }
       return;
     }
@@ -102,14 +96,22 @@ export default function AmbientAudio() {
     const ctx = new AudioContext();
     ctxRef.current = ctx;
 
+    const compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.value = -14;
+    compressor.knee.value = 18;
+    compressor.ratio.value = 6;
+    compressor.attack.value = 0.005;
+    compressor.release.value = 0.12;
+    compressor.connect(ctx.destination);
+
     const master = ctx.createGain();
     master.gain.value = 0;
-    master.connect(ctx.destination);
+    master.connect(compressor);
     masterRef.current = master;
 
     // Tanpura-style drone: Sa, Pa, upper Sa.
     const droneGain = ctx.createGain();
-    droneGain.gain.value = 0.08;
+    droneGain.gain.value = 0.16;
     droneGain.connect(master);
 
     const droneFreqs = [110, 165, 220];
@@ -126,58 +128,59 @@ export default function AmbientAudio() {
     lfo.type = 'sine';
     lfo.frequency.value = 0.12;
     const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 0.03;
+    lfoGain.gain.value = 0.04;
     lfo.connect(lfoGain);
     lfoGain.connect(droneGain.gain);
     lfo.start();
 
     // One damru strike: two-headed drum - "dam" then "ru".
     const playStrike = (when) => {
-      // Dam - high tone dropping.
+      // Dam - higher tone dropping fast (easy to hear on phones).
       const damGain = ctx.createGain();
-      damGain.gain.setValueAtTime(0.28, when);
+      damGain.gain.setValueAtTime(0.55, when);
       damGain.gain.exponentialRampToValueAtTime(0.001, when + 0.12);
       damGain.connect(master);
 
       const damOsc = ctx.createOscillator();
       damOsc.type = 'triangle';
-      damOsc.frequency.setValueAtTime(175, when);
-      damOsc.frequency.exponentialRampToValueAtTime(95, when + 0.12);
+      damOsc.frequency.setValueAtTime(260, when);
+      damOsc.frequency.exponentialRampToValueAtTime(140, when + 0.12);
       damOsc.connect(damGain);
       damOsc.start(when);
       damOsc.stop(when + 0.12);
 
       // Ru - lower tone dropping.
       const ruGain = ctx.createGain();
-      ruGain.gain.setValueAtTime(0.22, when + 0.12);
-      ruGain.gain.exponentialRampToValueAtTime(0.001, when + 0.3);
+      ruGain.gain.setValueAtTime(0.45, when + 0.1);
+      ruGain.gain.exponentialRampToValueAtTime(0.001, when + 0.28);
       ruGain.connect(master);
 
       const ruOsc = ctx.createOscillator();
       ruOsc.type = 'sine';
-      ruOsc.frequency.setValueAtTime(95, when + 0.12);
-      ruOsc.frequency.exponentialRampToValueAtTime(58, when + 0.3);
+      ruOsc.frequency.setValueAtTime(140, when + 0.1);
+      ruOsc.frequency.exponentialRampToValueAtTime(78, when + 0.28);
       ruOsc.connect(ruGain);
-      ruOsc.start(when + 0.12);
-      ruOsc.stop(when + 0.3);
+      ruOsc.start(when + 0.1);
+      ruOsc.stop(when + 0.28);
 
-      // Brief noise texture for the drum skin.
+      // Brief noise snap for the drum skin.
       const len = 0.06;
       const buffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * len), ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < data.length; i += 1) {
-        data[i] = (Math.random() * 2 - 1) * 0.5;
+        data[i] = (Math.random() * 2 - 1) * 0.8;
       }
 
       const noise = ctx.createBufferSource();
       noise.buffer = buffer;
 
       const noiseFilter = ctx.createBiquadFilter();
-      noiseFilter.type = 'lowpass';
-      noiseFilter.frequency.value = 650;
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.value = 900;
+      noiseFilter.Q.value = 0.8;
 
       const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.06, when);
+      noiseGain.gain.setValueAtTime(0.14, when);
       noiseGain.gain.exponentialRampToValueAtTime(0.001, when + len);
 
       noise.connect(noiseFilter);
@@ -186,27 +189,31 @@ export default function AmbientAudio() {
       noise.start(when);
     };
 
-    const lookAhead = 0.1;
-    nextHitRef.current = ctx.currentTime + lookAhead;
+    nextHitRef.current = ctx.currentTime + 0.05;
 
     const tick = () => {
       if (!ctxRef.current || ctxRef.current.state !== 'running') return;
       while (nextHitRef.current < ctxRef.current.currentTime + 0.5) {
         playStrike(nextHitRef.current);
-        nextHitRef.current += 1.55;
+        nextHitRef.current += 1.45;
       }
     };
 
+    // Start scheduling immediately; it will only sound once the context runs.
     tick();
-    intervalRef.current = setInterval(tick, 250);
+    intervalRef.current = setInterval(tick, 220);
 
-    try {
-      await ctx.resume();
-      fadeTo(mutedRef.current ? 0 : 1, 2.4);
-      setStarted(true);
-    } catch {
-      // AudioContext could not start.
-    }
+    // Fade in and mark started once the context is running.
+    const onStateChange = () => {
+      if (ctx.state === 'running') {
+        fadeTo(mutedRef.current ? 0 : 1, 0.4);
+        setStarted(true);
+      }
+    };
+    ctx.onstatechange = onStateChange;
+
+    // Call resume synchronously so it is inside the user-gesture call stack.
+    ctx.resume();
   }, [fadeTo]);
 
   useEffect(() => {
@@ -221,7 +228,7 @@ export default function AmbientAudio() {
   }, [start]);
 
   useEffect(() => {
-    fadeTo(muted ? 0 : 1, 0.4);
+    fadeTo(muted ? 0 : 1, 0.25);
     localStorage.setItem('ambient-muted', muted.toString());
   }, [muted, fadeTo]);
 
