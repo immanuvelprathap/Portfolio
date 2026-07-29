@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import styled from 'styled-components';
-import { FaInstagram, FaPlay } from 'react-icons/fa6';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import InstagramEmbed from './InstagramEmbed';
 
 const CarouselStyles = styled.div`
   margin: 12rem 0 10rem;
@@ -65,80 +65,36 @@ const CarouselStyles = styled.div`
 
   .insta__card {
     position: relative;
-    max-width: 760px;
+    max-width: 540px;
     margin: 0 auto;
     border: 1px solid var(--line);
     border-radius: 24px;
     overflow: hidden;
-    background: rgba(5, 7, 12, 0.6);
-  }
-
-  .insta__media {
-    position: relative;
-    aspect-ratio: 4 / 5;
-    background: var(--void);
-  }
-
-  .insta__media img,
-  .insta__media video {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    background: var(--void);
-  }
-
-  .insta__play {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    background: rgba(0, 0, 0, 0.25);
-    color: var(--white);
-  }
-
-  .insta__play svg {
-    width: 5.6rem;
-    height: 5.6rem;
-    filter: drop-shadow(0 0 16px rgba(0, 0, 0, 0.45));
+    background: var(--white);
   }
 
   .insta__caption {
-    padding: 2.4rem;
-    border-top: 1px solid var(--line);
+    padding: 1.6rem 2rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    text-align: center;
   }
 
   .insta__caption h3 {
     font-family: var(--display);
-    font-size: 2rem;
-    color: var(--white);
-    margin-bottom: 0.4rem;
+    font-size: 1.7rem;
+    color: #000;
+    margin-bottom: 0.3rem;
     line-height: 1.3;
   }
 
   .insta__caption p {
-    font-size: 1.35rem;
-    line-height: 1.7;
-    color: var(--mist);
-    margin-bottom: 1.2rem;
+    font-size: 1.3rem;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, 0.6);
   }
 
-  .insta__caption a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.8rem;
-    color: var(--blue);
-    font-size: 1.35rem;
-  }
-
-  .insta__caption a:hover {
-    color: var(--blue-bright);
-  }
-
-  .insta__caption a svg {
-    width: 1.6rem;
-    height: 1.6rem;
+  .insta__embed {
+    min-height: 460px;
   }
 
   .insta__controls {
@@ -264,43 +220,15 @@ export default function InstagramCarousel({ posts, title }) {
           {posts.map((post) => (
             <div className="insta__slide" key={post.id || post.shortcode}>
               <div className="insta__card">
-                <a
-                  href={post.permalink}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={`View ${post.title} on Instagram`}
-                >
-                  <div className="insta__media">
-                    {post.isVideo ? (
-                      <>
-                        <img
-                          src={post.thumbnailUrl || post.mediaUrl}
-                          alt={post.title}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <div className="insta__play" aria-hidden="true">
-                          <FaPlay />
-                        </div>
-                      </>
-                    ) : (
-                      <img
-                        src={post.mediaUrl || post.thumbnailUrl}
-                        alt={post.title}
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    )}
-                  </div>
-                </a>
-
                 <div className="insta__caption">
-                  {post.location ? <p>{post.location}</p> : null}
                   <h3>{post.title}</h3>
-                  <a href={post.permalink} target="_blank" rel="noreferrer">
-                    <FaInstagram />
-                    <span>View on Instagram</span>
-                  </a>
+                  {post.location ? <p>{post.location}</p> : null}
+                </div>
+                <div className="insta__embed">
+                  <InstagramEmbed
+                    shortcode={post.shortcode}
+                    caption="View this post on Instagram"
+                  />
                 </div>
               </div>
             </div>
