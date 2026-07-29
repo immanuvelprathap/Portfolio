@@ -208,7 +208,7 @@ async function syncInstagramBasicDisplay() {
   const url = `https://graph.instagram.com/me/media?fields=${fields}&limit=50&access_token=${INSTAGRAM_TOKEN}`;
   const data = await httpGetJson(url);
   const posts = (data.data || []).map((p) => {
-    const shortcode = p.permalink?.match(/\/p\/([^/]+)/)?.[1] || p.id;
+    const shortcode = p.permalink?.match(/\/(?:p|reel|tv)\/([^/]+)/)?.[1] || p.id;
     const firstLine = (p.caption || 'Post').split('\n')[0].trim();
     return {
       id: p.id,
