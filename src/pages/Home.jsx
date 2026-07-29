@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import Hero from '../components/Hero';
+import Announcement from '../components/Announcement';
 import WhoIAm from '../components/WhoIAm';
 import Pillars from '../components/Pillars';
 import Research from '../components/Research';
@@ -37,6 +38,7 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <Announcement />
       <WhoIAm />
       <Pillars />
       <Research />
