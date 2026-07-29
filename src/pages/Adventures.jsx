@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaInstagram } from 'react-icons/fa6';
 import Footer from '../components/Footer';
 import Reveal from '../components/Reveal';
+import InstagramEmbed from '../components/InstagramEmbed';
 import PeakImg from '../assets/images/adventure-peak.jpg';
 import MistImg from '../assets/images/adventure-mist.jpg';
 import LakeImg from '../assets/images/adventure-lake.jpg';
@@ -158,6 +159,71 @@ const PageStyles = styled.div`
     transform: translateY(-3px);
   }
 
+  .adv__embeds {
+    margin: 12rem 0 10rem;
+  }
+
+  .adv__embed__head {
+    text-align: center;
+    max-width: 60ch;
+    margin: 0 auto 6rem;
+  }
+
+  .adv__embed__head h2 {
+    font-family: var(--display);
+    font-size: clamp(2.6rem, 5vw, 4.6rem);
+    color: var(--white);
+    margin-bottom: 1.4rem;
+  }
+
+  .adv__embed__head h2 em {
+    font-style: normal;
+    color: var(--blue);
+  }
+
+  .adv__embed__head p {
+    font-size: 1.65rem;
+    line-height: 1.8;
+    color: var(--mist);
+  }
+
+  .adv__embed__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3.6rem 3rem;
+    align-items: start;
+  }
+
+  .adv__embed__cell {
+    background: rgba(5, 7, 12, 0.4);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 1.4rem;
+  }
+
+  .adv__embed__cell .instagram-media {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: unset !important;
+  }
+
+  .adv__embed__caption {
+    margin-top: 1.6rem;
+    text-align: center;
+  }
+
+  .adv__embed__caption h3 {
+    font-family: var(--display);
+    font-size: 1.9rem;
+    color: var(--white);
+    margin-bottom: 0.4rem;
+  }
+
+  .adv__embed__caption p {
+    font-size: 1.35rem;
+    color: var(--mist);
+  }
+
   @media only screen and (max-width: 768px) {
     padding: 12rem 0 0;
 
@@ -171,6 +237,10 @@ const PageStyles = styled.div`
 
     .adv__card:nth-child(3) {
       min-height: 360px;
+    }
+
+    .adv__embed__grid {
+      grid-template-columns: 1fr;
     }
   }
 `;
@@ -190,6 +260,39 @@ const items = [
     img: LakeImg,
     title: 'Stillness at altitude',
     location: 'A bench, a lake, and the same silence the lab chases',
+  },
+];
+
+const advPosts = [
+  {
+    shortcode: 'C_X23g-yMpq',
+    title: 'Mighty Kalu',
+    location: 'Monsoon trek, India',
+  },
+  {
+    shortcode: 'DXwx8Z6MYxZ',
+    title: 'Lake Luzern',
+    location: 'Switzerland',
+  },
+  {
+    shortcode: 'DTtMHNRjKZH',
+    title: 'Mdina overlook',
+    location: 'Malta',
+  },
+  {
+    shortcode: 'DTtKqwoDP1c',
+    title: 'Laguna Blu',
+    location: 'Malta',
+  },
+  {
+    shortcode: 'DTtKRaVjJp4',
+    title: 'Blue Lagoon',
+    location: 'Comino, Malta',
+  },
+  {
+    shortcode: 'DXBvxx6DJF6',
+    title: 'Bern',
+    location: 'Switzerland',
   },
 ];
 
@@ -251,6 +354,46 @@ export default function Adventures() {
               </motion.article>
             ))}
           </motion.div>
+
+          <Reveal delay={0.1}>
+            <section className="adv__embeds">
+              <div className="adv__embed__head">
+                <p className="eyebrow">From the field</p>
+                <h2>
+                  Peaks, <em>lagoons</em> and monsoon trails
+                </h2>
+                <p>
+                  A few dispatches from the road — mountain treks, alpine lakes,
+                  and the blue lagoons that look like consciousness made liquid.
+                </p>
+              </div>
+
+              <motion.div
+                className="adv__embed__grid"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ staggerChildren: 0.12 }}
+              >
+                {advPosts.map((post) => (
+                  <motion.article
+                    className="adv__embed__cell"
+                    key={post.shortcode}
+                    variants={cardVariants}
+                  >
+                    <InstagramEmbed
+                      shortcode={post.shortcode}
+                      caption={`${post.title} — ${post.location}`}
+                    />
+                    <div className="adv__embed__caption">
+                      <h3>{post.title}</h3>
+                      <p>{post.location}</p>
+                    </div>
+                  </motion.article>
+                ))}
+              </motion.div>
+            </section>
+          </Reveal>
 
           {instagram ? (
             <Reveal delay={0.1}>
