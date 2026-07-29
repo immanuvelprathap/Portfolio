@@ -64,9 +64,9 @@ jobs:
 
       - name: Deploy to immanuvelprathap.in
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_PUSH_TOKEN_IMMANUVELPRATHAP }}
+          GH_TOKEN: ${{ secrets.GH_DEPLOY_TOKEN }}
         run: |
           npx gh-pages -d dist \
-            -r https://x-access-token:${{ secrets.GITHUB_PUSH_TOKEN_IMMANUVELPRATHAP }}@github.com/immanuvelprathap/immanuvelprathap.git \
+            -r https://x-access-token:${{ secrets.GH_DEPLOY_TOKEN }}@github.com/immanuvelprathap/immanuvelprathap.git \
             -b gh-pages \
             -u "GitHub Actions Bot <actions@github.com>"
